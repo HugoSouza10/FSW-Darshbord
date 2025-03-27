@@ -1,4 +1,12 @@
+'use client';
+import Link from 'next/link';
+import { Button } from "./ui/button";
+import {LayoutGridIcon, PackageIcon, ShoppingBasketIcon} from 'lucide-react';
+import { usePathname } from 'next/navigation';
+
 const Sidebar = () => {
+    //Esse pathName pega sempre a tela atual.
+    const pathName = usePathname();
     return (
        <div className="w-64 bg-white p">
             {/*Imagem */}
@@ -7,9 +15,25 @@ const Sidebar = () => {
             </div>
             {/*Botões */}
             <div className="flex flex-col gap-2 p-2">
-                <button className="px-6 py-3">Dashbord</button>
-                <button className="px-6 py-3">Produtos</button>
-                <button className="px-6 py-3">Vendas</button>
+                <Button variant={pathName === '/' ? 'secondary' : 'ghost'} className="justify-start gap-1" asChild>
+                    <Link href="/">
+                        <LayoutGridIcon size={20}/>
+                        Dashbord
+                    </Link>
+                  
+                </Button>
+                <Button variant={pathName === '/products' ? 'secondary' : 'ghost'} className="justify-start gap-1" asChild>
+                    <Link href="/products">
+                        <PackageIcon size={20}/>
+                        Produtos
+                    </Link>
+                </Button>
+                <Button variant={pathName === '/sales' ? 'secondary' : 'ghost'} className="justify-start gap-1" asChild>
+                    <Link href="/sales">
+                        <ShoppingBasketIcon size={20}/>
+                        Vendas
+                    </Link>
+                </Button>
             </div>
        </div>
     )
