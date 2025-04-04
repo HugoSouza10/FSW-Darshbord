@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: stocky-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"  # Corrigido: porta padrão do PostgreSQL
+    volumes:
+      - postgres-data:/var/lib/postgresql/data  # Corrigido: caminho padrão do volume
+
+volumes:
+  postgres-data:  # Volume persistente para PostgreSQL
