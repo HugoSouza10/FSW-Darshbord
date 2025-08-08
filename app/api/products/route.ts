@@ -4,7 +4,8 @@ import { db } from "@/app/_lib/prisma";
 
 export async function GET() {
   const products = await db.product.findMany({});
-  return Response.json(products, {
+  const randomNumber = Math.random();
+  return Response.json({products, randomNumber}, {
     status: 200,
   });
 }
@@ -15,6 +16,22 @@ export async function POST(request: Request) {
   const price = body.price;
   const stock = body.stock;
   await db.product.create({
+    data: {
+      name,
+      price,
+      stock,
+    },
+  });
+  return Response.json({}, { status: 201 });
+}
+
+export async function PUT(request: Request) {
+  const body = await request.json();
+  const name = body.name;
+  const price = body.price;
+  const stock = body.stock;
+  await db.product.update({
+    where: { id: body.id }, // Make sure 'id' is provided in the request body
     data: {
       name,
       price,
