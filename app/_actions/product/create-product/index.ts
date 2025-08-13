@@ -1,7 +1,7 @@
 "use server";
 import { db } from "@/app/_lib/prisma";
 import { createProductSchema, CreateProductSchema } from "./schemas";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 
 //Todas as funções nesse arquivo serão tratada como uma server actions.
@@ -12,5 +12,5 @@ export const createProduct = async (data: CreateProductSchema) => {
     await db.product.create({
         data,
     })
-    revalidatePath('get-products'); // Invalida o cache da tag 'get-products'
+    revalidateTag('get-products'); // Invalida o cache da tag 'get-products'
 };

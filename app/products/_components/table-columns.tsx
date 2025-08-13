@@ -1,9 +1,11 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Product } from "@prisma/client"
 import { ColumnDef } from "@tanstack/react-table"
-import { CircleIcon } from "lucide-react";
+import { CircleIcon, ClipboardCopyIcon, Edit, MoreHorizontalIcon, TrashIcon } from "lucide-react";
 
 //Aqui estamos criando os dados de configuração da tabela produto
 
@@ -41,4 +43,36 @@ export const productTableColumns: ColumnDef<Product>[] = [
       </Badge>
     },
   },
+  {
+    accessorKey: "actions",
+    header: "Ações",
+    cell: (row) => {
+      const product = row.row.original;
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost">
+               <MoreHorizontalIcon size={16}/>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+              <DropdownMenuLabel>Ações</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={()=> navigator.clipboard.writeText(product.id)} className="gap-1.5">
+                <ClipboardCopyIcon size={16}/>
+                Copiar ID
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-1.5">
+                <Edit size={16} />
+                 Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-1.5">
+                <TrashIcon size={16} />
+                 Deletar
+              </DropdownMenuItem>
+          </DropdownMenuContent>
+      </DropdownMenu>
+      );
+    }
+  }
 ]
