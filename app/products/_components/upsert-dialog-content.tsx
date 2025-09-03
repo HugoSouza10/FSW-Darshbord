@@ -4,8 +4,6 @@ import { Loader2Icon, PlusIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -23,27 +21,28 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { createProductSchema, CreateProductSchema } from "@/app/_actions/product/create-product/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createProduct } from "@/app/_actions/product/create-product";
+import { upsertProduct } from "@/app/_actions/product/upsert-product";
+import { UpsertProductSchema } from "@/app/_actions/product/upsert-product/schemas";
 
 interface UpsertProductDialogContentProps {
-    onSuccess?: () => void
+    onSuccess?: () => void,
+    defaultValue?: UpsertProductSchema 
 }
-const UpsertProductDialogContent = ({onSuccess}: UpsertProductDialogContentProps) => {
-    const form = useForm<CreateProductSchema>({
+const UpsertProductDialogContent = ({onSuccess, defaultValue}: UpsertProductDialogContentProps) => {
+    const form = useForm<UpsertProductSchema>({
         shouldUnregister: true,
-        resolver: zodResolver(createProductSchema),
-        defaultValues: {
+        resolver: zodResolver(UpsertProductSchema),
+        defaultValues: defaultValue ?? {
           name: "",
           price: 0,
           stock: 1,
         },
     });
-
-    const onSubmit = async (data: CreateProductSchema) => {
+    const isEditing = !!defaultValue;
+    const onSubmit = async (data: UpsertProductSchema) => {
         try {
-           await createProduct(data);
+           await upsertProduct({...data, id: defaultValue?.id});
            onSuccess?.();
         } catch (error) {
             console.error(error);
@@ -54,7 +53,7 @@ const UpsertProductDialogContent = ({onSuccess}: UpsertProductDialogContentProps
             <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <DialogHeader>
-                <DialogTitle>Criar produto</DialogTitle>
+                <DialogTitle>{isEditing? 'Editar' : 'Criar'} produto</DialogTitle>
                 <DialogDescription>
                     Insira as informações abaixo
                 </DialogDescription>
