@@ -13,13 +13,13 @@ import { Input } from "@/components/ui/input";
 import {
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableFooter,
   TableHead,
@@ -28,11 +28,13 @@ import {
 } from "@/components/ui/table";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Product } from "@prisma/client";
-import { MoreHorizontalIcon, PlusIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { CheckCheckIcon, PlusIcon } from "lucide-react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import SalesTableDropdownMenu from "./table-dropdow-menu";
+import { createSale } from "@/app/_actions/sale/create-sale";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   productId: z.string().uuid({
@@ -47,6 +49,7 @@ type FormSchema = z.infer<typeof formSchema>;
 interface UpsertSheetContentProps {
   products: Product[];
   productsOptions: ComboboxOption[];
+  setSheetIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 interface SelectedProducts {
@@ -59,6 +62,7 @@ interface SelectedProducts {
 const UpsertSheetContent = ({
   products,
   productsOptions,
+  setSheetIsOpen,
 }: UpsertSheetContentProps) => {
   const [selectedProducts, setSelectedProducts] = useState<SelectedProducts[]>(
     []
@@ -76,12 +80,21 @@ const UpsertSheetContent = ({
       (product) => product.id === data.productId
     );
     if (!selectedProduct) return;
-    setSelectedProducts((currecyProducts) => {
-      const existingProduct = currecyProducts.find(
+    setSelectedProducts((currentProducts) => {
+      const existingProduct = currentProducts.find(
         (product) => product.id === selectedProduct.id
       );
       if (existingProduct) {
-        return currecyProducts.map((product) => {
+        const productIsOutOfStock =
+          existingProduct.quantity + data.quantity > selectedProduct.stock;
+        if (productIsOutOfStock) {
+          form.setError("quantity", {
+            message: "Quantidade indisponível em estoque.",
+          });
+          return currentProducts;
+        }
+        form.reset();
+        return currentProducts.map((product) => {
           if (product.id === selectedProduct.id) {
             return {
               ...product,
@@ -91,8 +104,16 @@ const UpsertSheetContent = ({
           return product;
         });
       }
+      const productIsOutOfStock = data.quantity > selectedProduct.stock;
+      if (productIsOutOfStock) {
+        form.setError("quantity", {
+          message: "Quantidade indisponível em estoque.",
+        });
+        return currentProducts;
+      }
+      form.reset();
       return [
-        ...currecyProducts,
+        ...currentProducts,
         {
           ...selectedProduct,
           price: Number(selectedProduct.price),
@@ -100,18 +121,32 @@ const UpsertSheetContent = ({
         },
       ];
     });
-    form.reset();
   };
   const productsTotal = useMemo(() => {
     return selectedProducts.reduce((acc, product) => {
       return acc + product.price * product.quantity;
     }, 0);
   }, [selectedProducts]);
+  console.log(productsTotal)
 
   const onDelete = (productId: string) => {
     setSelectedProducts((currecyProducts) => {
       return currecyProducts.filter((product) => product.id !== productId);
     });
+  };
+  const onSubmitSale = async () => {
+    try {
+      await createSale({
+        products: selectedProducts.map((product) => ({
+          id: product.id,
+          quantity: product.quantity,
+        })),
+      });
+      toast.success("Venda criada com sucesso!");
+      setSheetIsOpen(false);
+    } catch (error) {
+      toast.error("Erro ao criar a venda. Tente novamente.");
+    }
   };
   return (
     <SheetContent className="!max-w-[700px]">
@@ -202,6 +237,16 @@ const UpsertSheetContent = ({
           </TableRow>
         </TableFooter>
       </Table>
+      <SheetFooter className="pt-6">
+        <Button
+          disabled={selectedProducts.length === 0}
+          className="w-full gap-2"
+          onClick={onSubmitSale}
+        >
+          <CheckCheckIcon size={20} />
+          Finalizar venda
+        </Button>
+      </SheetFooter>
     </SheetContent>
   );
 };
