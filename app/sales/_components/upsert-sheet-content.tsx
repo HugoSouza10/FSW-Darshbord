@@ -35,6 +35,9 @@ import z from "zod";
 import SalesTableDropdownMenu from "./table-dropdow-menu";
 import { createSale } from "@/app/_actions/sale/create-sale";
 import { toast } from "sonner";
+//Vamos importar useAction aqui
+import { useAction } from "next-safe-action/hooks";
+import { flattenValidationErrors } from "next-safe-action";
 
 const formSchema = z.object({
   productId: z.string().uuid({
@@ -65,8 +68,19 @@ const UpsertSheetContent = ({
   setSheetIsOpen,
 }: UpsertSheetContentProps) => {
   const [selectedProducts, setSelectedProducts] = useState<SelectedProducts[]>(
-    []
+    [],
   );
+  //Aqui a gente vai chamar action createSale através do useAction
+  const { execute: executeCreateSale } = useAction(createSale, {
+    onError: ({error: {validationErrors, serverError}}) => {
+      const falttenErrors = flattenValidationErrors(validationErrors);
+      toast.error(serverError ?? falttenErrors.formErrors[0]);
+    },
+    onSuccess: () => {
+      toast.success("Venda realizada com sucesso");
+      setSheetIsOpen(false);
+    },
+  });
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -77,12 +91,12 @@ const UpsertSheetContent = ({
 
   const onSubmit = (data: FormSchema) => {
     const selectedProduct = products.find(
-      (product) => product.id === data.productId
+      (product) => product.id === data.productId,
     );
     if (!selectedProduct) return;
     setSelectedProducts((currentProducts) => {
       const existingProduct = currentProducts.find(
-        (product) => product.id === selectedProduct.id
+        (product) => product.id === selectedProduct.id,
       );
       if (existingProduct) {
         const productIsOutOfStock =
@@ -127,26 +141,21 @@ const UpsertSheetContent = ({
       return acc + product.price * product.quantity;
     }, 0);
   }, [selectedProducts]);
-  console.log(productsTotal)
+  console.log(productsTotal);
 
   const onDelete = (productId: string) => {
     setSelectedProducts((currecyProducts) => {
       return currecyProducts.filter((product) => product.id !== productId);
     });
   };
+  //Aqui estamos chamando nosso createSale
   const onSubmitSale = async () => {
-    try {
-      await createSale({
-        products: selectedProducts.map((product) => ({
-          id: product.id,
-          quantity: product.quantity,
-        })),
-      });
-      toast.success("Venda criada com sucesso!");
-      setSheetIsOpen(false);
-    } catch (error) {
-      toast.error("Erro ao criar a venda. Tente novamente.");
-    }
+    executeCreateSale({
+      products: selectedProducts.map((product) => ({
+        id: product.id,
+        quantity: product.quantity,
+      })),
+    });
   };
   return (
     <SheetContent className="!max-w-[700px]">
