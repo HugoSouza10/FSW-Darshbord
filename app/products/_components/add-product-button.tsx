@@ -22,7 +22,7 @@ export const AddProductButton = () => {
           Novo produto
         </Button>
       </DialogTrigger>
-      <UpsertProductDialogContent onSuccess = {() => setDialogIsOpen(false)}/>
+      <UpsertProductDialogContent setDialogIsOpen={setDialogIsOpen}/>
     </Dialog>
   );
 };

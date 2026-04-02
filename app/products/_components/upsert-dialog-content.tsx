@@ -24,15 +24,28 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { upsertProduct } from "@/app/_actions/product/upsert-product";
 import { UpsertProductSchema } from "@/app/_actions/product/upsert-product/schemas";
+import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
+import { on } from "events";
+import { Dispatch, SetStateAction } from "react";
 
 interface UpsertProductDialogContentProps {
-    onSuccess?: () => void,
-    defaultValue?: UpsertProductSchema 
+    defaultValue?: UpsertProductSchema,
+    setDialogIsOpen: Dispatch<SetStateAction<boolean>>
 }
-const UpsertProductDialogContent = ({onSuccess, defaultValue}: UpsertProductDialogContentProps) => {
+const UpsertProductDialogContent = ({setDialogIsOpen, defaultValue}: UpsertProductDialogContentProps) => {
+    const {execute: executeUpsertProduct} = useAction(upsertProduct, {
+       onSuccess: () => {
+        toast.success('Produto salvo com sucesso.');
+        setDialogIsOpen(false);
+       },
+       onError: () => {
+        toast.error('Ocorreu um erro ao salvar o produto.');
+       }
+    })
     const form = useForm<UpsertProductSchema>({
         shouldUnregister: true,
-        resolver: zodResolver(UpsertProductSchema),
+        resolver: zodResolver(UpsertProductSchema) as any,
         defaultValues: defaultValue ?? {
           name: "",
           price: 0,
@@ -40,18 +53,11 @@ const UpsertProductDialogContent = ({onSuccess, defaultValue}: UpsertProductDial
         },
     });
     const isEditing = !!defaultValue;
-    const onSubmit = async (data: UpsertProductSchema) => {
-        try {
-           await upsertProduct({...data, id: defaultValue?.id});
-           onSuccess?.();
-        } catch (error) {
-            console.error(error);
-        }
-    };
+  
     return (
         <DialogContent>
             <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(executeUpsertProduct)} className="space-y-8">
                 <DialogHeader>
                 <DialogTitle>{isEditing? 'Editar' : 'Criar'} produto</DialogTitle>
                 <DialogDescription>
