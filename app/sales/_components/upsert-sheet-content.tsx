@@ -82,7 +82,7 @@ const UpsertSheetContent = ({
     },
   });
   const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       productId: "",
       quantity: 1,
