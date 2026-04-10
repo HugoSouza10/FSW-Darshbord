@@ -2,9 +2,8 @@
 
 import { SaleDto } from "@/app/_data_access/sale/get-sales";
 import { formatCurrency } from "@/app/_helpers/currecy";
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontalIcon } from "lucide-react";
+import SalesTableDropdownMenu from "./table-dropdow-menu";
 
 //O acessorKey é a chave do objeto que queremos acessar, ou seja,
 // a propriedade do objeto que queremos exibir naquela coluna.
@@ -38,10 +37,6 @@ export const saleTableColumns: ColumnDef<SaleDto>[] = [
   },
   {
     header: "Ações",
-    cell: () => (
-      <Button>
-        <MoreHorizontalIcon size={16} />
-      </Button>
-    ),
+    cell: ({row: {original: sale}}) => <SalesTableDropdownMenu sale={sale} />,
   },
 ];
