@@ -32,12 +32,13 @@ import { CheckCheckIcon, PlusIcon } from "lucide-react";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
-import SalesTableDropdownMenu from "./table-dropdow-menu";
+import UpsertSaleTableDropdownMenu from "./upsert-table-dropdow-menu";
 import { createSale } from "@/app/_actions/sale/create-sale";
 import { toast } from "sonner";
 //Vamos importar useAction aqui
 import { useAction } from "next-safe-action/hooks";
 import { flattenValidationErrors } from "next-safe-action";
+
 
 const formSchema = z.object({
   productId: z.string().uuid({
@@ -231,7 +232,7 @@ const UpsertSheetContent = ({
                 {formatCurrency(product.price * product.quantity)}
               </TableCell>
               <TableCell>
-                <SalesTableDropdownMenu product={product} onDelete={onDelete} />
+                <UpsertSaleTableDropdownMenu product={product} onDelete={onDelete} />
               </TableCell>
             </TableRow>
           ))}
